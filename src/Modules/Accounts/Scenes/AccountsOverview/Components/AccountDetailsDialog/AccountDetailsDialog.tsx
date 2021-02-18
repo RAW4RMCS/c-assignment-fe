@@ -56,7 +56,9 @@ export default function AccountDetailsDialog(props: IProps) {
 				<div className={classes.randomFactContainer}>
 					<div className={classes.randomFact}>{account.randomFact ?? '-'}</div>
 					<div>
-						<Button onClick={() => onGetRandomFact(account.id)}>{buttonText}</Button>
+						<Button variant='contained' color='primary' onClick={() => onGetRandomFact(account.id)}>
+							{buttonText}
+						</Button>
 					</div>
 				</div>
 			</>

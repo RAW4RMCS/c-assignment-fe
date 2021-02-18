@@ -1,27 +1,47 @@
 import {
 	Avatar,
 	Button,
+	CircularProgress,
 	List,
 	ListItem,
 	ListItemAvatar,
 	ListItemSecondaryAction,
 	ListItemText,
-	ListSubheader,
 	makeStyles,
 	Paper,
 	Typography,
 } from '@material-ui/core';
 import { AccountDto } from 'api/api';
 import { apiClient } from 'api/apiClient';
+import { AuthenticationContext } from 'Context/AuthenticationContext';
 import { replaceItem } from 'Helpers/ArrayHelper';
 import { orderBy } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AccountDetailsDialog from './Components/AccountDetailsDialog/AccountDetailsDialog';
 import EditAccountDialog from './Components/EditAccountDialog/EditAccountDialog';
 
 const useStyles = makeStyles(theme => ({
 	paper: {
 		margin: theme.spacing(2),
+	},
+	container: {
+		display: 'flex',
+		flexGrow: 1,
+		alignItems: 'center',
+		height: 64,
+		padding: theme.spacing(1, 2, 0, 0),
+	},
+	pusher: {
+		flexGrow: 1,
+	},
+	centerContainer: {
+		display: 'flex',
+		flexGrow: 1,
+		height: 'calc(100vh - 64px)',
+		overflow: 'hidden',
+		justifyContent: 'center',
+		alignItems: 'center',
+		flexDirection: 'column',
 	},
 }));
 
@@ -31,6 +51,9 @@ export default function AccountsOverview() {
 	const [selectedAccountId, setSelectedAccountId] = useState<string>(undefined);
 	const [accountDetailsDialogOpen, setAccountDetailsDialogOpen] = useState(false);
 	const [editAccountDialogOpen, setEditAccountDialogOpen] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+
+	const { isAuthenticated } = useContext(AuthenticationContext);
 
 	useEffect(() => {
 		initialize();
@@ -38,12 +61,15 @@ export default function AccountsOverview() {
 
 	async function initialize() {
 		try {
+			setIsLoading(true);
 			const accounts = await apiClient.getAccounts();
 			const orderedAccounts = orderBy(accounts, a => a.name.toLowerCase(), 'asc');
 			setAccounts(orderedAccounts);
 		} catch (error) {
 			// Error handling with a snackbar for example
 			console.log(error);
+		} finally {
+			setIsLoading(false);
 		}
 	}
 
@@ -130,25 +156,49 @@ export default function AccountsOverview() {
 		);
 	}
 
-	if (accounts.length === 0) {
-		return <>There are no accounts :(</>;
+	function renderEmptyState() {
+		return (
+			<div className={classes.centerContainer}>
+				<Typography style={{ paddingBottom: 8 }} variant='h6'>
+					There are no accounts yet!
+				</Typography>
+				{isAuthenticated && (
+					<Button variant='contained' color='secondary' onClick={() => setEditAccountDialogOpen(true)}>
+						Add account
+					</Button>
+				)}
+			</div>
+		);
+	}
+
+	if (isLoading) {
+		return (
+			<div className={classes.centerContainer}>
+				<CircularProgress size={128} color='primary' />
+			</div>
+		);
 	}
 
 	return (
 		<>
-			<Paper className={classes.paper}>
-				<List>
-					<ListSubheader>
-						<Typography variant='h6'>Accounts</Typography>
-						<ListItemSecondaryAction>
+			{!isLoading && accounts.length === 0 ? (
+				renderEmptyState()
+			) : (
+				<>
+					<div className={classes.container}>
+						<div className={classes.pusher} />
+						<div>
 							<Button variant='contained' color='primary' onClick={() => setEditAccountDialogOpen(true)}>
 								Add new account
 							</Button>
-						</ListItemSecondaryAction>
-					</ListSubheader>
-					{accounts.map(renderAccount)}
-				</List>
-			</Paper>
+						</div>
+					</div>
+					<Paper className={classes.paper}>
+						<List>{accounts.map(renderAccount)}</List>
+					</Paper>
+				</>
+			)}
+
 			<AccountDetailsDialog
 				account={accounts.find(a => a.id === selectedAccountId)}
 				open={accountDetailsDialogOpen}

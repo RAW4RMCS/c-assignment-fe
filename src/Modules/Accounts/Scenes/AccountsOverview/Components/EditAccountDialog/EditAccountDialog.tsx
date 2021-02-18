@@ -63,6 +63,7 @@ export default function EditAccountDialog(props: IProps) {
 	const classes = useStyles();
 
 	useEffect(() => {
+		setErrorMessage('');
 		setEditAccount(account ?? AccountsLogic.createEmptyAccountDto);
 	}, [account]);
 
