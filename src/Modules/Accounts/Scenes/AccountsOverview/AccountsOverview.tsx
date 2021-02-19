@@ -80,7 +80,7 @@ export default function AccountsOverview() {
 			setAccounts(prevState =>
 				replaceItem(
 					prevState,
-					{ ...prevState.find(p => p.id === accountId), randomFact: newFact.text },
+					{ ...prevState.find(p => p.id === accountId), randomFact: newFact.data },
 					p => p.id === accountId
 				)
 			);
