@@ -56,12 +56,6 @@ export class ApiClient extends ApiClientAuthentication {
 				result200 = _responseText === '' ? null : <AccountDto[]>JSON.parse(_responseText, this.jsonParseReviver);
 				return result200;
 			});
-		} else if (status === 404) {
-			return response.text().then(_responseText => {
-				let result404: any = null;
-				result404 = _responseText === '' ? null : <ProblemDetails>JSON.parse(_responseText, this.jsonParseReviver);
-				return throwException('Not Found', status, _responseText, _headers, result404);
-			});
 		} else if (status !== 200 && status !== 204) {
 			return response.text().then(_responseText => {
 				return throwException('An unexpected server error occurred.', status, _responseText, _headers);
@@ -539,19 +533,19 @@ export interface AccountDto {
 	randomFact?: string | undefined;
 }
 
+export interface AddAccountDto {
+	id?: string;
+	name?: string | undefined;
+	iban?: string | undefined;
+	favoriteQuote?: string | undefined;
+}
+
 export interface ProblemDetails {
 	type?: string | undefined;
 	title?: string | undefined;
 	status?: number | undefined;
 	detail?: string | undefined;
 	instance?: string | undefined;
-}
-
-export interface AddAccountDto {
-	id?: string;
-	name?: string | undefined;
-	iban?: string | undefined;
-	favoriteQuote?: string | undefined;
 }
 
 export interface EditAccountDto {
